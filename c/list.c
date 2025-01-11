@@ -94,12 +94,6 @@ node* node_insert_ordered(node *n, int val) {
   return head;
 }
 
-
-struct node {
-  node *next;
-  int val;
-};
-
 node* __reverse_rec(node *prev, node *head) {
   // Assume:
   // - prev, head are adjacent nodes in the original list
@@ -117,9 +111,6 @@ node* __reverse_rec(node *prev, node *head) {
 node* node_reverse(node *head) {
   return __reverse_rec(NULL, head);
 }
-
-
-
 
 node* node_reverse_2(node *head) {
   node *next;

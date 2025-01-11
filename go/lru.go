@@ -1,6 +1,6 @@
-package import
-// # Caching
+package main
 
+// # Caching
 // Task:
 // Implement a cache with the following interface:
 // - Get: returns the cached value with the given key if available.
@@ -28,6 +28,11 @@ package import
 // 	"container/heap"
 // 	"fmt"
 // )
+
+import (
+	"container/heap"
+	"fmt"
+)
 
 //
 // Cache Class

@@ -73,7 +73,7 @@ void q_enqueue(Q* q, int val) {
   /* Dequeue at tail of the list */
   QN* qn = calloc(sizeof(QN), 1);
   qn->val = val;
-  if(q_len(qn) == 0) {
+  if(q_len(q) == 0) {
     q->tail = qn;
     q->head = qn;
   }

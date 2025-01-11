@@ -3,7 +3,7 @@
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 
-int main()
+int main(void)
 {
     InitWindow(400, 200, "raygui - controls test suite");
     SetTargetFPS(60);

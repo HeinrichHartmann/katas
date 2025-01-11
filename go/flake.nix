@@ -1,5 +1,5 @@
 {
-  description = "A C engironment";
+  description = "A go engironment";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -17,6 +17,8 @@
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             go
+            gotools
+            golangci-lint
           ];
         };
       });
