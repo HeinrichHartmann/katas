@@ -9,14 +9,12 @@ typedef struct node node;
  * Linked List
  *
  */
-typedef int LLVAL;
-
 struct node {
   node *next;
-  LLVAL val;
+  int val;
 };
 
-node *node_new(LLVAL val) {
+node *node_new(int val) {
   node *n = calloc(1, sizeof(node));
   n->val = val;
   return n;
@@ -31,7 +29,7 @@ void node_free(node *n){
   }
 }
 
-void node_append(node *n, LLVAL val) {
+node* node_append(node *n, int val) {
   assert(n);
   while(n->next) {
     n = n->next;
@@ -39,6 +37,34 @@ void node_append(node *n, LLVAL val) {
   assert(n);
   assert(n->next == NULL);
   n->next = node_new(val);
+  return n->next;
+}
+
+/*
+ * Delete first node with given value in the list (if any).
+ *
+ * Returns head of list with removed node.
+ *
+ */
+node* node_delete(node *n, int val) {
+  node *head = n;
+  node *prev = NULL;
+  while ((n != NULL) && (n->val != val)) {
+    prev = n;
+    n = n->next;
+  }
+  if (n == NULL) {
+    // no node with given value found
+    return head;
+  }
+  assert(n->val == val);
+  node *o = n->next;
+  // node_free(n);
+  if (prev == NULL) {
+    return o;
+  }
+  prev->next = o;
+  return head;
 }
 
 int node_sum(node *n) {
@@ -50,7 +76,7 @@ int node_sum(node *n) {
   return acc;
 }
 
-node* node_insert_ordered(node *n, LLVAL val) {
+node* node_insert_ordered(node *n, int val) {
   assert(n);
   node *head = n;
   node *m = node_new(val);
@@ -68,21 +94,39 @@ node* node_insert_ordered(node *n, LLVAL val) {
   return head;
 }
 
-node* node_reverse(node *head) {
-  /*
-   *  #    #
-   *  #    0 -> #
-   *  #    0 -> 1 -> #
-   *  #    0 -> 1 -> 2 -> #
-   *  p    h    n
-   *       p    h    n
-   *            p    h    n
-   */
-  node *prev = NULL;
-  node *next;
-  while (head!= NULL) {
-    next = head->next;
 
+struct node {
+  node *next;
+  int val;
+};
+
+node* __reverse_rec(node *prev, node *head) {
+  // Assume:
+  // - prev, head are adjacent nodes in the original list
+  //   both may be NULL
+  // - Nodes up to prev have already been reversed
+  // - Node head is to be reversed
+  //
+  if(head == NULL) { return prev; }
+  node *next = head->next;
+  head->next = prev;
+  __attribute((musttail))
+    return __reverse_rec(head,next);
+}
+
+node* node_reverse(node *head) {
+  return __reverse_rec(NULL, head);
+}
+
+
+
+
+node* node_reverse_2(node *head) {
+  node *next;
+  node *prev;
+  prev = NULL;
+  while (head != NULL) {
+    next = head->next;
     // ... <- p    h -> n -> ...
     head->next = prev;
     // ... <- p <- h    n -> ...
@@ -93,7 +137,7 @@ node* node_reverse(node *head) {
 }
 
 
-node* node_reverse_2(node *h) {
+node* node_reverse_1(node *h) {
   if (h == NULL) {
     /* -># */
     return h;
@@ -122,10 +166,8 @@ node* node_reverse_2(node *h) {
      */
     // reverse
     c->next = p;
-
     // done?
     if(n == NULL) { return c; }
-
     // advance
     p = c;
     c = n;
@@ -165,7 +207,6 @@ int test_append(void) {
   return 0;
 }
 
-
 int test_insert(void) {
   node *n = node_new(0);
   for(int i=1; i<10; i++){
@@ -181,12 +222,36 @@ int test_insert(void) {
 }
 
 int test_reverse(void) {
+  node *h, *n;
   node_reverse(NULL);
+
+  h = node_new(0);
+  n = h;
+  for(int i=1; i<100000; i++){
+    n = node_append(n, i * 10);
+  }
+  h = node_reverse(h);
+  node_free(h);
+
+  h = node_new(0);
+  for(int i=1; i<10; i++){
+    h = node_reverse(h);
+    node_append(h, i * 10);
+  }
+  node_print(*h);
+  return 0;
+}
+
+
+int test_delete(void) {
   node *n = node_new(0);
   for(int i=1; i<10; i++){
-    n = node_reverse(n);
-    node_append(n, i * 10);
+    node_append(n, i);
   }
+  n = node_delete(n, 0);
+  n = node_delete(n, 5);
+  n = node_delete(n, 9);
+  n = node_delete(n, 3);
   node_print(*n);
   node_free(n);
   return 0;
@@ -211,5 +276,6 @@ int main(int argc, char *argv[]) {
   run_test("append", test_append);
   run_test("insert", test_insert);
   run_test("reverse", test_reverse);
+  run_test("delete", test_delete);
   return 0;
 }

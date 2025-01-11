@@ -1,5 +1,5 @@
 SRCS = tree.c
-CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic -g -fsanitize=address -fno-omit-frame-pointer
+CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic -g -fsanitize=address -fno-omit-frame-pointer -O0
 OBJS = $(SRCS:.c=.x)
 
 %.x: %.c
