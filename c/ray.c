@@ -3,30 +3,43 @@
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 
+#define WIDTH 1000
+#define HEIGHT 1000
+
+typedef struct point { int x; int y; } point;
+
+point xy2screen(point p) {
+    /* xy coords are centered on the screen */
+    return (point){p.x + WIDTH/2, p.y + HEIGHT/2};
+}
+
+void draw_rect(point center, int size, Color color) {
+    point screen = xy2screen(center);
+    DrawRectangle(screen.x - size/2, screen.y - size/2, size, size, color);
+    DrawRectangleLines(screen.x - size/2, screen.y - size/2, size, size, DARKGRAY);
+}
+
+void draw_figure(point center, int size, Color color) {
+    if (size < 2) {
+        return; 
+    }
+    draw_figure((point){center.x+size/2, center.y+size/2}, size/2, color);
+    draw_figure((point){center.x+size/2, center.y-size/2}, size/2, color);
+    draw_figure((point){center.x-size/2, center.y+size/2}, size/2, color);
+    draw_figure((point){center.x-size/2, center.y-size/2}, size/2, color);
+    draw_rect(center, size, color);
+}
+
 int main(void)
 {
-    InitWindow(400, 200, "raygui - controls test suite");
+    InitWindow(WIDTH, HEIGHT, "Canvas");
     SetTargetFPS(60);
-
-    bool showMessageBox = false;
-
+    
     while (!WindowShouldClose())
     {
-        // Draw
-        //----------------------------------------------------------------------------------
         BeginDrawing();
-            ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
-
-            if (GuiButton((Rectangle){ 24, 24, 120, 30 }, "#191#Show Message")) showMessageBox = true;
-
-            if (showMessageBox)
-            {
-                int result = GuiMessageBox((Rectangle){ 85, 70, 250, 100 },
-                    "#191#Message Box", "Hi! This is a message!", "Nice;Cool");
-
-                if (result >= 0) showMessageBox = false;
-            }
-
+        ClearBackground(RAYWHITE);
+        draw_figure((point){0, 0}, 500, BLUE);
         EndDrawing();
     }
 
