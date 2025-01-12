@@ -1,20 +1,13 @@
-SRCS = $(wildcard *.c)
-CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic -g -fsanitize=address -fno-omit-frame-pointer -O0
-LIBS = -lm -lraylib
-TARGETS = $(SRCS:.c=.macho) $(SRCS:.c=.exe)
+build: build-native
 
-all: $(TARGETS)
+build-native:
+	nix build
 
-%.macho: %.c
-	# use clang to compile for macos
-	clang -o $@ $(CFLAGS) $(LIBS) $<
-
-%.exe: %.c
-	# use mingw to compile for windows
-	x86_64-w64-mingw32-gcc -o $@ $(CFLAGS) $(LIBS) $<
+build-windows:
+	nix build .#windows
 
 clean:
-	rm -f $(TARGETS)
-	rm -f *.o
+	rm -rf result
 
-.PHONY: clean
+run:
+	./result/bin/photosort
