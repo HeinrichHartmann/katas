@@ -11,16 +11,15 @@
       let
         pkgs = import nixpkgs {
           inherit system;
+          config.allowUnfree = true;
         };
         
         # Windows cross compilation setup
-        pkgsCross = import nixpkgs {
-          inherit system;
-          crossSystem = {
-            config = "x86_64-w64-mingw32";
-            system = "x86_64-windows";
-          };
-        };
+        mingw = pkgs.pkgsCross.mingw32;
+
+        # Common build configuration
+        CFLAGS = "-Wall -Wextra -Werror -std=c99 -pedantic";
+        LIBS = "";
       in
       {
         packages = {
@@ -28,13 +27,10 @@
             name = "photosort";
             src = ./.;
             
-            buildInputs = with pkgs; [
-              raylib
-            ];
+            enableParallelBuilding = true;
             
             buildPhase = ''
-              $CC -o photosort main.c -lraylib -lm \
-                -Wall -Wextra -Werror -std=c99 -pedantic
+              $CC -o photosort main.c ${LIBS} ${CFLAGS}
             '';
             
             installPhase = ''
@@ -43,17 +39,14 @@
             '';
           };
 
-          windows = pkgsCross.stdenv.mkDerivation {
+          windows = mingw.stdenv.mkDerivation {
             name = "photosort-windows";
             src = ./.;
             
-            buildInputs = with pkgsCross; [
-              raylib
-            ];
+            enableParallelBuilding = true;
             
             buildPhase = ''
-              $CC -o photosort.exe main.c -lraylib -lm \
-                -Wall -Wextra -Werror -std=c99 -pedantic
+              $CC -o photosort.exe main.c ${LIBS} ${CFLAGS}
             '';
             
             installPhase = ''
@@ -70,7 +63,6 @@
             libllvm
             gnumake
             raylib
-            raygui
             clang-tools
           ];
         };
