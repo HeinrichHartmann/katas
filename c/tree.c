@@ -12,40 +12,66 @@ struct node {
   node *right;
 };
 
-node* new_node(int val)
+node* tree_new(int val)
 {
-  node* n = malloc(sizeof(node));
+  node* n = calloc(sizeof(node), 1);
   n->val = val;
   return n;
 }
 
-void free_node(node *n) {
+void node_print(node *n, char *postfix) {
+  postfix = postfix ? postfix : "";
+  char *l = n->left ? "<" : ".";
+  char *r = n->right ? ">" : ".";
+  printf("%s[%d]%s%s", l, n->val, r, postfix);
+}
+
+void tree_free(node *n) {
+  if (n == NULL) { return; }
+  tree_free(n->left);
+  tree_free(n->right);
   free(n);
 }
 
-void _print_node(node *n, int indent) {
-  if (!n) {
-    return;
+node *tree_insert(node *root, int val) {
+  if (root == NULL) {
+    return tree_new(val);
   }
+
+  if( val < root->val ) {
+    root->left = tree_insert(root->left, val);
+  }
+  else if( root->val <= val ) {
+    root->right = tree_insert(root->right, val);
+  }
+  return root;
+}
+
+node *tree_insert_array(node *root, int *vals, int len) {
+  for (int i=0; i<len; i++) {
+    root = tree_insert(root, vals[i]);
+  }
+  return root;
+}
+
+void _tree_print(node *n, int indent) {
+  if (n == NULL) { return; }
   for (int i = indent; i>0; i--) {
     printf("-");
   };
-  printf("Node[%d, %p, %p]\n", n->val, (void*)n->left, (void*)n->right);
-  if (n->left) {
-    _print_node(n->left, indent+1);
-  }
-  if (n->right) {
-    _print_node(n->right,indent+1);
-  }
+  node_print(n, "\n");
+  if (n->left) { _tree_print(n->left, indent+1); }
+  if (n->right) { _tree_print(n->right,indent+1); }
 }
 
-void print_node(node *n) {
-  _print_node(n, 0);
+void tree_print(node *root) {
+  _tree_print(root, 0);
 }
 
 node* tree_from_list(int *list, int len, int idx) {
   if (!(idx < len)) { return NULL; }
-  node *n = new_node(list[idx]);
+  node *n = tree_new(list[idx]);
+
   if (len < 2*(idx + 1)) { return n; }
   node *a = tree_from_list(list, len, 2*idx+1);
   node *b = tree_from_list(list, len, 2*(idx+1));
@@ -98,21 +124,28 @@ int length_path_with_given_val(node *n, int val)
 int main(void)
 {
     printf("Hello world!\n");
-    node *n = new_node(5);
-    print_node(n);
-
+    node *n = tree_new(5);
+    tree_print(n);
 
     int list[] = { 1,1,1,3,1,1,1,1,1,1,1,1,1,1,1,2,2,2,1,1,2,5 };
     int llist = sizeof(list)/sizeof(int);
     n = tree_from_list(list,  llist, 0);
-    print_node(n);
+    tree_print(n);
     printf("Depth: %d\n", depth(n));
 
     node *m = dfs(n, 5);
-    print_node(m);
+    node_print(m, "\n");
 
     node *m2 = dfs(n, 3);
-    print_node(m2);
+    node_print(m2, "\n");
 
     printf("Length of path with val: %d\n", length_path_with_given_val(n,n->val));
+    tree_free(n);
+
+    printf("Tree insertion\n");
+    n = tree_new(0);
+    for (int i=0; i<100; i++) {
+      n = tree_insert(n, i+1);
+    }
+    tree_print(n);
 }
