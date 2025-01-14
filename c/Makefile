@@ -10,6 +10,9 @@ all: $(TARGETS) ray.x
 		./$$target; \
 		done
 
+lint:
+	clang-tidy $(SRCS) -- $(CFLAGS) $(LIBS)
+
 # Standard C files
 %.x: %.c
 	clang -o $@ $(CFLAGS) $(LIBS) $<
@@ -23,4 +26,4 @@ clean:
 	rm -f *.o
 
 
-.PHONY: all clean 
+.PHONY: all clean

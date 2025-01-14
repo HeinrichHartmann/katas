@@ -19,13 +19,15 @@
 
         # Common build configuration
         CFLAGS = "-Wall -Wextra -Werror -std=c99 -pedantic";
-        LIBS = "";
+        LIBS = "-lraylib -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo";
       in
       {
         packages = {
           default = pkgs.stdenv.mkDerivation {
             name = "photosort";
             src = ./.;
+            
+            buildInputs = with pkgs; [ raylib ];
             
             enableParallelBuilding = true;
             
@@ -43,15 +45,30 @@
             name = "photosort-windows";
             src = ./.;
             
+            buildInputs = [ mingw.raylib ];
+            
             enableParallelBuilding = true;
             
             buildPhase = ''
-              $CC -o photosort.exe main.c ${LIBS} ${CFLAGS}
+              $CC -o photosort.exe \
+                main.c \
+                -I${mingw.raylib}/include \
+                -L${mingw.raylib}/lib \
+                -lraylib \
+                -lopengl32 \
+                -lgdi32 \
+                -lwinmm \
+                -lm \
+                -mconsole \
+                -g \
+                -O0 \
+                ${CFLAGS}
             '';
             
             installPhase = ''
               mkdir -p $out/bin
               cp photosort.exe $out/bin/
+              cp ${mingw.raylib}/bin/*.dll $out/bin/
             '';
           };
         };
@@ -62,8 +79,8 @@
             lldb
             libllvm
             gnumake
-            raylib
             clang-tools
+            raylib
           ];
         };
       });

@@ -104,8 +104,7 @@ node* __reverse_rec(node *prev, node *head) {
   if(head == NULL) { return prev; }
   node *next = head->next;
   head->next = prev;
-  __attribute((musttail))
-    return __reverse_rec(head,next);
+  __attribute((musttail) return __reverse_rec(head,next);
 }
 
 node* node_reverse(node *head) {

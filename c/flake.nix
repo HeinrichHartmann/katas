@@ -17,6 +17,7 @@
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             clang
+            clang-tools # eg. clang-tidy
             lldb
             libllvm
             gnumake
