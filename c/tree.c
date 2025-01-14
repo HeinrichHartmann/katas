@@ -71,6 +71,9 @@ void* queue_pop(queue *q)
   q->back = q->back->next;
   void *out = n->val;
   free(n);
+  if(q->back == NULL) {
+    q->front = NULL;
+  }
   return out;
 }
 
@@ -186,21 +189,21 @@ int tree_depth(node *n)
   return 1 + MAX(tree_depth(n->left), tree_depth(n->right));
 }
 
-void tree_walk_dfs(node *n, void (*visit)(node* n))
+void tree_walk_dfs(node *n, void (*visit)(node* n, void* closure), void *closure)
 {
   if (n == NULL) { return; }
-  visit(n);
-  tree_walk_dfs(n->left, visit);
-  tree_walk_dfs(n->right, visit);
+  visit(n, closure);
+  tree_walk_dfs(n->left, visit, closure);
+  tree_walk_dfs(n->right, visit, closure);
 }
 
-void tree_walk_bfs(node *n, void (*visit)(node* n))
+void tree_walk_bfs(node *n, void (*visit)(node* n, void* closure), void *closure)
 {
   queue *q = queue_new();
   queue_push(q, n);
   while (!queue_empty(q)) {
     node *n = queue_pop(q);
-    visit(n);
+    visit(n, closure);
     if (n->left) { queue_push(q, n->left); }
     if (n->right) { queue_push(q, n->right); }
   }
@@ -241,14 +244,11 @@ typedef struct {
     int count;
 } walk_collector;
 
-void collect_value(node *n, walk_collector *c) {
-    if (c->count < MAX_WALK_NODES) {
-        c->values[c->count++] = n->val;
-    }
-}
-
-void walk_collect_wrapper(node *n) {
-    collect_value(n, (walk_collector*)(n->val);
+void walk_collector_visit(node *n, void *cls) {
+  walk_collector *c = (walk_collector*) cls;
+  if (c->count < MAX_WALK_NODES) {
+    c->values[c->count++] = n->val;
+  }
 }
 
 int arrays_equal(int *a, int *b, int len) {
@@ -356,16 +356,8 @@ int test_tree_walk_dfs(void) {
     root->left->right = tree_new(5);
 
     walk_collector collector = {0};
-    
-    // Temporarily store collector in root's value field
-    void *old_val = root->val;
-    root->val = &collector;
-    
-    tree_walk_dfs(root, walk_collect_wrapper);
-    
-    // Restore original value
-    root->val = old_val;
-    
+    tree_walk_dfs(root, walk_collector_visit, &collector);
+
     // Expected pre-order traversal: 1,2,4,5,3
     int expected[] = {1, 2, 4, 5, 3};
     int result = (collector.count == 5 && 
@@ -389,17 +381,9 @@ int test_tree_walk_bfs(void) {
     root->left->right = tree_new(5);
 
     walk_collector collector = {0};
-    
-    // Temporarily store collector in root's value field
-    void *old_val = root->val;
-    root->val = &collector;
-    
-    tree_walk_bfs(root, walk_collect_wrapper);
-    
-    // Restore original value
-    root->val = old_val;
-    
-    // Expected level-order traversal: 1,2,3,4,5
+    tree_walk_bfs(root, walk_collector_visit, &collector);
+
+    // Expected pre-bfs traversal: 1,2,4,5,3
     int expected[] = {1, 2, 3, 4, 5};
     int result = (collector.count == 5 && 
                  arrays_equal(collector.values, expected, 5));
