@@ -7,6 +7,61 @@
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 
 /*
+ * Stack implementation backed by Linked List
+ */
+
+typedef struct stack stack;
+typedef struct stack_node stack_node;
+struct stack_node {
+  void *val;
+  stack_node *next;
+};
+
+struct stack {
+  stack_node *head;
+};
+
+stack *stack_new(void) {
+  stack *s = malloc(sizeof(stack));
+  s->head = NULL;
+  return s;
+}
+
+void stack_free(stack *s) {
+  if (s == NULL) { return; }
+  stack_node *n = s->head;
+  while (n) {
+    stack_node *next = n->next;
+    free(n);
+    n = next;
+  }
+  free(s);
+}
+
+void stack_push(stack *s, void *val) {
+  stack_node *n = malloc(sizeof(stack_node));
+  n->val = val;
+  n->next = s->head;
+  s->head = n;
+}
+
+void* stack_pop(stack *s) {
+  if (s->head == NULL) {
+    return NULL;
+  }
+  stack_node *n = s->head;
+  s->head = s->head->next;
+  void *out = n->val;
+  free(n);
+  return out;
+}
+
+int stack_empty(stack *s) {
+  assert(s);
+  return s->head == NULL;
+}
+
+/*
  * Simple Queue Structure backed by Linked List
  *
  * Q:
@@ -83,6 +138,10 @@ int queue_empty(queue *q)
   return q->back == NULL;
 }
 
+
+//
+// Tree Datastructure
+//
 typedef struct node node;
 
 struct node {
@@ -209,7 +268,6 @@ void tree_walk_bfs(node *n, void (*visit)(node* n, void* closure), void *closure
   }
 }
 
-
 /*
  * Returns length of the longest path of nodes with the given value as the given node in the tree
 */
@@ -221,6 +279,12 @@ int length_path_with_given_val(node *n, int val)
     + length_path_with_given_val(n->left, val)
     + length_path_with_given_val(n->right, val);
 }
+
+
+
+//
+// Test cases
+//
 
 // Test framework
 typedef struct {
@@ -255,9 +319,7 @@ int arrays_equal(int *a, int *b, int len) {
     return memcmp(a, b, len * sizeof(int)) == 0;
 }
 
-//
-// Test cases
-//
+// Test implementation
 int test_create_tree(void) {
     node *n = tree_new(5);
     int result = (n != NULL && n->val == 5 && n->left == NULL && n->right == NULL);
@@ -392,11 +454,55 @@ int test_tree_walk_bfs(void) {
     ASSERT(result, "tree_walk_bfs should traverse in level-order");
 }
 
+// Stack test cases
+int test_stack_new(void) {
+    stack *s = stack_new();
+    int result = (s != NULL && s->head == NULL);
+    stack_free(s);
+    ASSERT(result, "stack_new should create empty stack");
+}
+
+int test_stack_push_pop(void) {
+    stack *s = stack_new();
+    int val1 = 42;
+    int val2 = 43;
+    
+    stack_push(s, &val1);
+    stack_push(s, &val2);
+    
+    int *pop1 = stack_pop(s);
+    int *pop2 = stack_pop(s);
+    int *pop3 = stack_pop(s);
+    
+    // LIFO order: last in (43) should come out first
+    int result = (*pop1 == 43 && *pop2 == 42 && pop3 == NULL);
+    stack_free(s);
+    ASSERT(result, "stack push/pop should maintain LIFO order");
+}
+
+int test_stack_empty(void) {
+    stack *s = stack_new();
+    int val = 42;
+    
+    int empty1 = stack_empty(s);
+    stack_push(s, &val);
+    int empty2 = stack_empty(s);
+    stack_pop(s);
+    int empty3 = stack_empty(s);
+    
+    int result = (empty1 && !empty2 && empty3);
+    stack_free(s);
+    ASSERT(result, "stack_empty should correctly report stack state");
+}
+
 //
 // Main
 //
 int main(void) {
     test_case tests[] = {
+        {"Stack New", test_stack_new},
+        {"Stack Push/Pop", test_stack_push_pop},
+        {"Stack Empty", test_stack_empty},
         {"Queue New", test_queue_new},
         {"Queue Push/Pop", test_queue_push_pop},
         {"Queue Empty", test_queue_empty},
