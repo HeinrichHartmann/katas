@@ -29,7 +29,12 @@ void node_free(node *n){
   }
 }
 
-node* node_append(node *n, int val) {
+node *node_append(node *n, int val) {
+  /*
+   * Mutates list n to append a node at the tail of the list
+   *
+   * Returns pointer to the appended node, in order to aid iteration
+   */
   assert(n);
   while(n->next) {
     n = n->next;
@@ -38,6 +43,13 @@ node* node_append(node *n, int val) {
   assert(n->next == NULL);
   n->next = node_new(val);
   return n->next;
+}
+
+node *node_prepend(node *n, int val)
+{
+  node *new_node = node_new(val);
+  new_node->next = n;
+  return new_node;
 }
 
 /*
@@ -104,7 +116,8 @@ node* __reverse_rec(node *prev, node *head) {
   if(head == NULL) { return prev; }
   node *next = head->next;
   head->next = prev;
-  __attribute((musttail) return __reverse_rec(head,next);
+  __attribute((musttail))
+    return __reverse_rec(head,next);
 }
 
 node* node_reverse(node *head) {
@@ -247,6 +260,19 @@ int test_delete(void) {
   return 0;
 }
 
+int test_prepend(void) {
+  node *n = NULL;
+  n = node_prepend(n, 3);
+  n = node_prepend(n, 2);
+  n = node_prepend(n, 1);
+  assert(node_sum(n) == 6);
+  assert(n->val == 1);
+  assert(n->next->val == 2);
+  assert(n->next->next->val == 3);
+  node_print(*n);
+  node_free(n);
+  return 0;
+}
 
 int run_test(char* name, int (*f)(void)) {
   printf("%s ... ", name);
@@ -267,5 +293,6 @@ int main(int argc, char *argv[]) {
   run_test("insert", test_insert);
   run_test("reverse", test_reverse);
   run_test("delete", test_delete);
+  run_test("prepend", test_prepend);
   return 0;
 }
