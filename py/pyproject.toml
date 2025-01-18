@@ -1,7 +1,9 @@
 [project]
-name = "katas"
+name = "payment-channels"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-requires-python = ">=3.12"
-dependencies = []
+description = "Payment Channel Network Simulation"
+dependencies = [
+    "networkx",
+    "numpy",
+    "ortools>=9.11.4210",
+]
